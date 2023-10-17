@@ -297,7 +297,15 @@ class timetask(Plugin):
             reply.content = reply_text
             channel_name = RobotConfig.conf().get("channel_type", "wx")
             channel = channel_factory.create_channel(channel_name)
-            channel.send(reply, context)
+
+            receiver_list = context.kwargs["receiver"].split(",")
+            print("receiver_list={}".format(receiver_list))
+            for receiver in receiver_list:
+                context.kwargs["receiver"] = receiver
+                context.kwargs["session_id"] = receiver
+                channel.send(reply, context)
+
+            #channel.send(reply, context)
             
             #释放
             channel = None
@@ -343,6 +351,7 @@ class timetask(Plugin):
         #替换源消息中的指令
         content_dict["content"] = eventStr
         #添加必要key
+        print("receiver={}".format(other_user_id))
         content_dict["receiver"] = other_user_id
         content_dict["session_id"] = other_user_id
         content_dict["isgroup"] = isGroup

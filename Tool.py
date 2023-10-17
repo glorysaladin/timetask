@@ -856,13 +856,14 @@ class TimeTaskModel:
         substring_groupTitle = substring_groupTitle.replace("]", "").strip()
         return substring_event, substring_groupTitle
     
-    #通过 群Title 获取群ID
+    #通过 群Title 获取群ID, 支持正则匹配多个群聊
     def get_gropID_withGroupTitle(self, groupTitle, channel_name):
         if len(groupTitle) <= 0:
               return ""
         #itchat
         if channel_name == "wx":
             tempRoomId = ""
+            room_id_list = []
             #群聊处理       
             try:
                 #群聊  
@@ -872,18 +873,23 @@ class TimeTaskModel:
                     #id
                     userName = chatroom["UserName"]
                     NickName = chatroom["NickName"]
-                    if NickName == groupTitle:
-                        tempRoomId = userName
-                        break
-                    
-                return tempRoomId
+                    result = re.match(groupTitle, NickName)
+                    print("Nickname={}".format(NickName))
+                    if result:
+                        print("match room ={}".format(NickName))
+                        room_id_list.append(userName)
+                    #if NickName == groupTitle:
+                    #    tempRoomId = userName
+                    #    break
+                print("room_id_list={}".format(room_id_list))
+                return ",".join(room_id_list)
             except Exception as e:
                 print(f"[{channel_name}通道] 通过 群Title 获取群ID发生错误，错误信息为：{e}")
                 return tempRoomId
             
-            
         elif channel_name == "ntchat":
             tempRoomId = ""
+            room_id_list = []
             try:
                 #数据结构为字典数组
                 rooms = wechatnt.get_rooms()
@@ -892,11 +898,14 @@ class TimeTaskModel:
                     for item in rooms:
                         roomId = item.get("wxid")
                         nickname = item.get("nickname")
-                        if nickname == groupTitle:
-                            tempRoomId = roomId
-                            break
+                        result = re.match(groupTitle, nickname)
+                        if result:
+                            room_id_list.append(roomId)
+                        #if nickname == groupTitle:
+                        #    tempRoomId = roomId
+                        #    break
                         
-                return tempRoomId
+                return ",".join(room_id_list)
                         
             except Exception as e:
                 print(f"[{channel_name}通道] 通过 群Title 获取群ID发生错误，错误信息为：{e}")
